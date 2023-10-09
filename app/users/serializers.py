@@ -52,6 +52,11 @@ class PasswordMatchValidateMixin:
         return attrs
 
 
+class AuthenticateSerializer(serializers.Serializer):
+    email = serializers.EmailField(write_only=True)
+    password = serializers.CharField(write_only=True)
+
+
 class UserSerializer(serializers.ModelSerializer, PasswordMatchValidateMixin):
     current_password = serializers.CharField(required=False, write_only=True)
     password2 = serializers.CharField(write_only=True)
@@ -92,11 +97,6 @@ class UserSerializer(serializers.ModelSerializer, PasswordMatchValidateMixin):
         return super().update(instance, validated_data)
 
 
-class AuthenticateSerializer(serializers.Serializer):
-    email = serializers.EmailField(write_only=True)
-    password = serializers.CharField(write_only=True)
-
-
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
@@ -111,7 +111,6 @@ class ShopSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        """Метод для создания"""
         user = self.context['request'].auth.user
         validated_data['owner'] = user
         return super().create(validated_data)
@@ -122,27 +121,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('id', 'name',)
         read_only_fields = ('id',)
-
-
-class PartnerCategorySerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=50)
-    external_id = serializers.IntegerField(min_value=1)
-
-    class Meta:
-        model = ShopCategory
-        fields = ('id', 'name', 'external_id')
-        read_only_fields = ('id',)
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['id'] = instance.category.id
-        return data
-
-
-class BuyerCategorySerializer(PartnerCategorySerializer):
-
-    class Meta(PartnerCategorySerializer.Meta):
-        fields = ('id', 'name', )
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -182,6 +160,27 @@ class ProductInfoSerializer(ProductInfoBaseSerializer):
 class ProductInfoForOrderSerializer(ProductInfoSerializer):
     class Meta(ProductInfoBaseSerializer.Meta):
         fields = ('id', 'category', 'product', 'product_parameters', 'price', 'price_rrc',)
+
+
+class PartnerCategorySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=50)
+    external_id = serializers.IntegerField(min_value=1)
+
+    class Meta:
+        model = ShopCategory
+        fields = ('id', 'name', 'external_id')
+        read_only_fields = ('id',)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['id'] = instance.category.id
+        return data
+
+
+class BuyerCategorySerializer(PartnerCategorySerializer):
+
+    class Meta(PartnerCategorySerializer.Meta):
+        fields = ('id', 'name', )
 
 
 class PartnerProductInfoBriefSerializer(ProductInfoBaseSerializer):
@@ -248,9 +247,9 @@ class PartnerProductInfoSerializer(ProductInfoBaseSerializer):
     def update(self, instance, validated_data):
 
         """
-        Метод обновляет 'product_parameters', 'quantity', 'price', 'price_rrc'.
-        Если указано поле 'product_parameters',
-        то оно полностью заменяется на предоставленное (по логике PUT).
+        The method updates: 'product_parameters', 'quantity', 'price', 'price_rrc'.
+        If the field is specified 'product_parameters',
+        then it is completely replaced by the provided one (PUT).
         """
 
         product_parameters = validated_data.pop('product_parameters', None)
@@ -386,7 +385,7 @@ class PartnerOrderProductsSerializer(OrderItemBuyerSerializer):
 
 class PartnerOrderSerializer(serializers.ModelSerializer):
     ordered_items = PartnerOrderProductsSerializer(read_only=True, many=True)
-    state = serializers.ChoiceField(choices=SellerOrderState.choices[1:])  # убираем статус корзины
+    state = serializers.ChoiceField(choices=SellerOrderState.choices[1:])
 
     summary = serializers.IntegerField()
     contact = ContactSerializer()
@@ -417,10 +416,10 @@ class PartnerOrderSerializer(serializers.ModelSerializer):
             if new_state == SellerOrderState.canceled:
                 instance.rollback_product_quantity(buyer_order)
 
-            subject = f'Заказ {buyer_order.id}'
-            message = f'Изменения в заказе {buyer_order.id}. ' \
-                      f'\nСтатус вложенного заказа {seller_order_id} ' \
-                      f'от магазина {instance.shop.name} изменён на: {new_state}\n\n'
+            subject = f'Order: {buyer_order.id}'
+            message = f'Changes in the order: {buyer_order.id}. ' \
+                      f'\nStatus of the attached order: {seller_order_id} ' \
+                      f'from the store {instance.shop.name} changed to: {new_state}\n\n'
 
             send_confirmation_email(buyer_email, subject=subject, message=message)
 
@@ -428,14 +427,16 @@ class PartnerOrderSerializer(serializers.ModelSerializer):
 
 
 class PartnerStateSerializer(serializers.Serializer):
+
     state = serializers.ChoiceField(choices=PartnerState.choices)
 
 
 class PositiveIntegers(serializers.ListSerializer):
+
     child = serializers.IntegerField(min_value=1)
 
 
 class CustomPasswordTokenSerializer(PasswordTokenSerializer, PasswordMatchValidateMixin):
-    password2 = serializers.CharField()
 
+    password2 = serializers.CharField()
     validate = PasswordMatchValidateMixin.validate

@@ -5,7 +5,7 @@ from .app_choices import UserConfirmation
 
 def check_email(details, *args, **kwargs):
     if not details['email']:
-        return JsonResponse({'error': 'authentication without email is not provided. '
+        return JsonResponse({'error': 'authentication without email is not provided.'
                                       'Please add an email to your social account'})
 
 
@@ -17,7 +17,8 @@ def set_random_password(details, is_new, *args, **kwargs):
 
 
 def set_is_confirmed(details, is_new, *args, **kwargs):
-    if is_new: details['need_confirmation'] = UserConfirmation.confirmed
+    if is_new:
+        details['need_confirmation'] = UserConfirmation.confirmed
 
 
 def get_credentials(user, is_new, random_password=None, *args, **kwargs):

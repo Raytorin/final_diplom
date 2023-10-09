@@ -55,7 +55,9 @@ class UserViewSet(mixins.CreateModelMixin,
         return self.user
 
     def get_permissions(self):
-        """Получение прав для действий."""
+        """
+        Getting rights for actions
+        """
         if self.action != 'create':
             return [IsAuthenticated()]
         return []
@@ -106,7 +108,9 @@ class ShopView(mixins.CreateModelMixin,
     serializer_class = ShopSerializer
 
     def get_permissions(self):
-        """Получение прав для действий."""
+        """
+        Getting rights for actions
+        """
         permissions = [IsShopOwnerOrReadOnly()]
         if self.action in {'create', 'update', 'partial_update'}:
             permissions.append(IsAuthenticated())
@@ -120,7 +124,6 @@ class CategoryView(ReadOnlyModelViewSet):
 
 class ProductView(ReadOnlyModelViewSet):
     serializer_class = ProductInfoSerializer
-
     filterset_class = ProductFilter
 
     def get_queryset(self, *args, **kwargs):
@@ -132,7 +135,9 @@ class PartnerProductView(PartnerPaginationMixin, ModelViewSet, UserFromRequestMi
     filterset_class = PartnerProductFilter
 
     def get_permissions(self):
-        """Получение прав для действий."""
+        """
+        Getting rights for actions
+        """
         permissions = [IsAuthenticated()]
         if self.action != 'create_catalogue':
             permissions.append(IsPartner())
@@ -263,7 +268,8 @@ class BasketView(APIView, UserFromRequestMixin):
 
     def get(self, request, *args, **kwargs):
         basket = []
-        if _basket_object := self.user.basket_object: basket.append(_basket_object)
+        if _basket_object := self.user.basket_object:
+            basket.append(_basket_object)
         return Response(BasketSerializer(basket, many=True).data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
@@ -338,7 +344,8 @@ class BasketView(APIView, UserFromRequestMixin):
             if ordered_product_ids == items_to_del_in_current_order:
                 seller_orders_to_del[seller_order.id] = seller_order
             else:
-                ordered_objects_to_del = (k for k, v in ordered_items.items() if v in items_to_del_in_current_order)
+                ordered_objects_to_del = (key for key, value in ordered_items.items() \
+                                          if value in items_to_del_in_current_order)
 
                 for ordered_object in ordered_objects_to_del:
                     ordered_items_to_del.add(ordered_object.id)
@@ -360,6 +367,20 @@ class BasketView(APIView, UserFromRequestMixin):
         return Response(BasketSerializer(basket).data, status=status.HTTP_204_NO_CONTENT)
 
 
+class PartnerOrderView(PartnerPaginationMixin,
+                       mixins.RetrieveModelMixin,
+                       mixins.UpdateModelMixin,
+                       mixins.ListModelMixin,
+                       GenericViewSet,
+                       UserFromRequestMixin):
+    permission_classes = [IsAuthenticated, IsPartner]
+    serializer_class = PartnerOrderSerializer
+    filterset_class = SellerOrderFilter
+
+    def get_queryset(self):
+        return self.user.shop.orders.exclude(state=SellerOrderState.basket).all()
+
+
 class OrderViewSet(mixins.CreateModelMixin,
                    mixins.ListModelMixin,
                    mixins.RetrieveModelMixin,
@@ -375,10 +396,10 @@ class OrderViewSet(mixins.CreateModelMixin,
     def create(self, request, *args, **kwargs):
         user = self.user
 
-        order = user.basket_queryset.prefetch_related('seller_orders__shop',
-                                                      'seller_orders__ordered_items',
-                                                      'seller_orders__ordered_items__product_info',
-                                                      'seller_orders__ordered_items__product_info__product').first()
+        order = user.basket_queryset.prefetch_related('seller_orders_shop',
+                                                      'seller_orders_ordered_items',
+                                                      'seller_orders_ordered_items_product_info',
+                                                      'seller_orders_ordered_items_product_info_product').first()
         if not order:
             return Response({'error': 'no order to confirm'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -398,7 +419,6 @@ class OrderViewSet(mixins.CreateModelMixin,
         quantity_to_update = {}
         ordered_items_strs = {}
 
-        # проверка, какие товары заказаны больше, чем в наличии
         for seller_order in all_orders:
 
             ordered_items = seller_order.ordered_items.all()
@@ -411,8 +431,8 @@ class OrderViewSet(mixins.CreateModelMixin,
 
                 if result_quantity < 0:
                     acceptable_order = False
-                    message = f'too many ordered. You ordered {ordered_quantity} pcs, ' \
-                              f'but only {available_quantity} pcs in stock'
+                    message = f'too many ordered. You ordered {ordered_quantity}, ' \
+                              f'but only {available_quantity} in stock'
                     ordered_item.status = message
 
                 elif acceptable_order:
@@ -423,7 +443,6 @@ class OrderViewSet(mixins.CreateModelMixin,
                                                             f'quantity: {ordered_item.quantity}')
 
         if acceptable_order:
-            # подтверждение заказа продавца
             current_date = timezone.now()
             for seller_order in all_orders:
 
@@ -437,10 +456,10 @@ class OrderViewSet(mixins.CreateModelMixin,
                 seller_order.created_at = current_date
                 seller_order.save()
 
-                subject = f'Новый заказ {seller_order.id}'
-                message = f'{subject}\nТовары:\n{"".join(ordered_items_strs[seller_order.id])}\n' \
-                          f'Доставить по адресу:\n{str(users_contact)}\n' \
-                          f'Итог: {seller_order.summary}'
+                subject = f'New order {seller_order.id}'
+                message = f'{subject}\nProducts:\n{"".join(ordered_items_strs[seller_order.id])}\n' \
+                          f'Deliver to:\n{str(users_contact)}\n' \
+                          f'Result: {seller_order.summary}'
 
                 send_confirmation_email(seller_order.shop.email, subject=subject, message=message)
 
@@ -448,27 +467,26 @@ class OrderViewSet(mixins.CreateModelMixin,
             order.created_at = current_date
             order.save()
 
-            # уведомление покупателя
             ordered_items = []
             summary_shipping_price = 0
 
             for seller_order in order.seller_orders.all():
                 for ordered_item in seller_order.ordered_items.all():
                     product_info = ordered_item.product_info
-                    info = f'Товар: {product_info.product.name}, ' \
-                           f'количество: {ordered_item.quantity}, ' \
-                           f'сумма: {ordered_item.quantity * product_info.price}'
+                    info = f'Product: {product_info.product.name}, ' \
+                           f'quantity: {ordered_item.quantity}, ' \
+                           f'total: {ordered_item.quantity * product_info.price}'
                     ordered_items.append(info)
                 summary_shipping_price += seller_order.shipping_price
 
             ordered_items = '\n'.join(ordered_items)
 
-            subject = f'Заказ {order.id}'
-            message = f'Спасибо за {subject.lower()}!\n\n' \
-                      f'Заказанные товары: \n{ordered_items}\n' \
-                      f'Доставка по адресу: \n\n{str(users_contact)}\n' \
-                      f'Суммарная цена доставки: {summary_shipping_price}\n' \
-                      f'Итог: {order.total_sum}'
+            subject = f'Order {order.id}'
+            message = f'Thanks for {subject.lower()}!\n\n' \
+                      f'Ordered products: \n{ordered_items}\n' \
+                      f'Delivery to: \n\n{str(users_contact)}\n' \
+                      f'Total delivery price: {summary_shipping_price}\n' \
+                      f'Total: {order.total_sum}'
 
             send_confirmation_email(user.email, subject=subject, message=message)
 
@@ -504,21 +522,6 @@ class BuyerSellerOrderView(mixins.DestroyModelMixin,
             seller_order_instance.save()
 
             seller_email = seller_order_instance.shop.email
-            subject = f'Заказ {seller_order_instance.id} отменён'
-            message = f'{subject} пользователем. Товары возвращены на склад.'
+            subject = f'Order {seller_order_instance.id} cancelled'
+            message = f'{subject} by the user. The goods have been returned to the warehouse.'
             send_confirmation_email(seller_email, subject=subject, message=message)
-
-
-class PartnerOrderView(PartnerPaginationMixin,
-                       mixins.RetrieveModelMixin,
-                       # продавец может менять только state и shipping_price
-                       mixins.UpdateModelMixin,
-                       mixins.ListModelMixin,
-                       GenericViewSet,
-                       UserFromRequestMixin):
-    permission_classes = [IsAuthenticated, IsPartner]
-    serializer_class = PartnerOrderSerializer
-    filterset_class = SellerOrderFilter
-
-    def get_queryset(self):
-        return self.user.shop.orders.exclude(state=SellerOrderState.basket).all()

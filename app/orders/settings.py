@@ -13,10 +13,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 from os import getenv, path
 
+from dotenv import load_dotenv
 
-def _get_boolean_from_env(env: str) -> bool:
-    return getenv(env).capitalize() == 'True'
-
+load_dotenv()
 
 # domain for building absolute URI, when there is no access to the http-request object
 BASE_DOMAIN = getenv('BASE_DOMAIN')
@@ -29,10 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-*in&7%rh2a@dk%z+banf404$42wjl=9%7p-bg#9-0rs23=74vk'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = _get_boolean_from_env('DEBUG')
+DEBUG = False
 
 ALLOWED_HOSTS = getenv('ALLOWED_HOSTS').split(',')
 
@@ -71,7 +70,6 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'social_core.backends.vk.VKOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -162,7 +160,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-        'social_core.backends.vk.VKOAuth2'
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',
@@ -181,11 +178,6 @@ REST_FRAMEWORK = {
 }
 
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
-SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
-SOCIAL_AUTH_VK_APP_USER_MODE = 1
-
-SOCIAL_AUTH_VK_OAUTH2_KEY = getenv('SOCIAL_AUTH_VK_OAUTH2_KEY')
-SOCIAL_AUTH_VK_OAUTH2_SECRET = getenv('SOCIAL_AUTH_VK_OAUTH2_SECRET')
 
 LOGIN_REDIRECT_URL = '/'
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
@@ -226,7 +218,7 @@ EMAIL_HOST = getenv('EMAIL_HOST')
 EMAIL_HOST_USER = getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = int(getenv('EMAIL_PORT'))
-EMAIL_USE_TLS = _get_boolean_from_env('EMAIL_USE_TLS')
-EMAIL_USE_SSL = _get_boolean_from_env('EMAIL_USE_SSL')
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -52,7 +52,7 @@ class SellerOrderInline(TabularInline):
 @admin_register(User)
 class CustomUserAdmin(UserAdmin):
     """
-    Панель управления пользователями
+    User control panel
     """
     model = User
 
@@ -80,7 +80,7 @@ class CustomUserAdmin(UserAdmin):
 @admin_register(ConfirmRegistrationToken)
 class ConfirmRegistrationTokenAdmin(ModelAdmin):
     list_display = ('user', 'token')
-    search_fields = ('user__email', )
+    search_fields = ('user_email', )
 
 
 @admin_register(Shop)
@@ -141,8 +141,17 @@ class ProductParameterAdmin(ModelAdmin):
 
 @admin_register(Contact)
 class ContactAdmin(ModelAdmin):
-    list_display = ('id', 'user', 'city', 'street', 'house', 'structure', 'building', 'apartment', 'phone', 'is_deleted')
-    search_fields = (list_display[0], 'user__email') + list_display[2:-1]
+    list_display = ('id',
+                    'user',
+                    'city',
+                    'street',
+                    'house',
+                    'structure',
+                    'building',
+                    'apartment',
+                    'phone',
+                    'is_deleted')
+    search_fields = (list_display[0], 'user_email') + list_display[2:-1]
     list_filter = ('is_deleted', )
 
 
@@ -156,7 +165,15 @@ class BuyerOrderAdmin(ModelAdmin):
 
 @admin_register(SellerOrder)
 class SellerOrderAdmin(ModelAdmin):
-    list_display = ('id', 'buyer_order', 'shop', 'updated_at', 'created_at', 'state', 'contact', 'shipping_price', 'summary')
+    list_display = ('id',
+                    'buyer_order',
+                    'shop',
+                    'updated_at',
+                    'created_at',
+                    'state',
+                    'contact',
+                    'shipping_price',
+                    'summary')
     search_fields = ('id', 'buyer_order__id', 'buyer_order__user__email', 'shop__email', 'created_at', 'contact__phone')
     list_filter = ('state', 'shop__name', 'contact__city')
     inlines = (SellerOrderItemInline,)

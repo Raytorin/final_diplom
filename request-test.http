@@ -1,0 +1,43 @@
+# примеры API-запросов
+
+@baseUrl = http://127.0.0.1:8000
+
+# создание пользователя
+POST {{baseUrl}}/users/
+Content-Type: application/json
+
+{
+    "first_name": "Giorno", 
+    "last_name": "Giovanna", 
+    "username": "Mac", 
+    "email": "example@gmail.com",
+    "password": "asnjdn133!!!",
+    "password2": "asnjdn133!!!"
+}
+
+###
+
+# получение данных
+GET {{baseUrl}}/users/
+Content-Type: application/json
+
+{
+    "Authorization": "Token d13d142c-11aa-4ad4-802d-bf530546e6c8",
+    "first_name": "Giorno", 
+    "last_name": "Giovanna", 
+    "username": "Mac", 
+    "email": "example@gmail.com", 
+    "password": "asnjdn133!!!",
+    "password2": "asnjdn133!!!"
+}
+
+###
+
+# авторизация по паролю
+POST {{baseUrl}}/users/auth/
+Content-Type: application/json
+
+{
+    "email": "example@gmail.com", 
+    "password": "asnjdn133!!!"
+}

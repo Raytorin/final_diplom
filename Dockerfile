@@ -1,6 +1,6 @@
-FROM python:3.10-alpine
+FROM python:3.11
 
-WORKDIR /project
+WORKDIR /new_project
 
 COPY ./app .
 
@@ -9,7 +9,7 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 CMD pytest && \
-    python3 manage.py collectstatic --noinput && \
-    python3 manage.py makemigrations && \
-    python3 manage.py migrate --run-syncdb && \
+    python manage.py collectstatic --noinput && \
+    python manage.py makemigrations && \
+    python manage.py migrate --run-syncdb && \
     gunicorn project_orders.wsgi -b 0.0.0.0:8000

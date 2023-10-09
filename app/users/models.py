@@ -6,7 +6,7 @@ from django.db.models import Sum, F, Prefetch
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from project_orders.settings import BASE_DOMAIN
+from orders.settings import BASE_DOMAIN
 from .app_choices import UserType, SellerOrderState, BuyerOrderState, UserConfirmation
 from rest_framework.authtoken.models import Token
 from phonenumber_field.modelfields import PhoneNumberField
@@ -82,8 +82,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         ConfirmRegistrationToken.objects.create(user=self, token=token)
         token_url = reverse('confirm_email', args=[token])
         full_url = request.build_absolute_uri(token_url) if request is not None else BASE_DOMAIN + token_url
-        subject = 'Подтверждение регистрации'
-        message = f'Для подтверждения регистрации и получения токена перейдите по ссылке: {full_url}'
+        subject = 'Confirmation of registration'
+        message = f'To confirm registration and receive a token, follow the link: {full_url}'
         send_confirmation_email(self.email, subject=subject, message=message)
         return full_url
 
@@ -110,8 +110,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
         ordering = ('email',)
 
 
@@ -120,8 +120,8 @@ class ConfirmRegistrationToken(models.Model):
     token = models.CharField(max_length=150)
 
     class Meta:
-        verbose_name = 'Токен подтверждения почты'
-        verbose_name_plural = 'Токены подтверждения почты'
+        verbose_name = 'Email Confirmation Token'
+        verbose_name_plural = 'Email Confirmation Tokens'
         ordering = ('user',)
 
 
@@ -143,8 +143,8 @@ class Shop(models.Model):
         return super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = 'Магазин'
-        verbose_name_plural = 'Магазины'
+        verbose_name = 'Shop'
+        verbose_name_plural = 'Shops'
         ordering = ('email',)
 
 
@@ -155,8 +155,8 @@ class Category(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Список всех категорий'
+        verbose_name = 'Category'
+        verbose_name_plural = 'List of all categories'
         ordering = ('name',)
 
 
@@ -173,8 +173,8 @@ class ShopCategory(models.Model):
                              on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = 'Категория магазина'
-        verbose_name_plural = 'Категории магазинов'
+        verbose_name = 'Store category'
+        verbose_name_plural = 'Store categories'
         ordering = ('shop', 'category')
         constraints = [
             models.UniqueConstraint(fields=['shop', 'category', ], name='unique_shop_category'),
@@ -196,8 +196,8 @@ class Product(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Товар'
-        verbose_name_plural = 'Список всех товаров'
+        verbose_name = 'Product'
+        verbose_name_plural = 'List of all products'
         ordering = ('name',)
 
 
@@ -213,8 +213,8 @@ class ProductInfo(models.Model):
     price_rrc = models.PositiveIntegerField()
 
     class Meta:
-        verbose_name = 'Товар магазина'
-        verbose_name_plural = 'Товары магазинов'
+        verbose_name = "Store product"
+        verbose_name_plural = 'Store products'
         ordering = ('shop',)
         constraints = [
             models.UniqueConstraint(fields=['shop', 'external_id'], name='unique_product_info'),
@@ -231,8 +231,8 @@ class Parameter(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'Параметр'
-        verbose_name_plural = 'Параметры'
+        verbose_name = 'Parameter'
+        verbose_name_plural = 'Parameters'
         ordering = ('name',)
 
 
@@ -243,8 +243,8 @@ class ValueOfParameter(models.Model):
         return self.value
 
     class Meta:
-        verbose_name = 'Значение параметра'
-        verbose_name_plural = 'Значения параметров'
+        verbose_name = 'Parameter value'
+        verbose_name_plural = 'Parameter values'
         ordering = ('value',)
 
 
@@ -262,8 +262,8 @@ class ProductParameter(models.Model):
                               on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = 'Характеристика товара'
-        verbose_name_plural = 'Характеристики товаров'
+        verbose_name = 'Product Characteristics'
+        verbose_name_plural = 'Products Characteristics'
         ordering = ('product_info',)
         constraints = [
             models.UniqueConstraint(fields=['product_info', 'parameter'], name='unique_product_parameter'),
@@ -271,23 +271,23 @@ class ProductParameter(models.Model):
 
 
 class Contact(models.Model):
-    user = models.ForeignKey(User, verbose_name='Пользователь',
+    user = models.ForeignKey(User, verbose_name='User',
                              related_name='contacts', blank=True,
                              on_delete=models.CASCADE)
 
-    city = models.CharField(max_length=50, verbose_name='Город')
-    street = models.CharField(max_length=100, verbose_name='Улица')
-    house = models.CharField(max_length=15, verbose_name='Дом', blank=True)
-    structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
-    building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
-    apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
-    phone = PhoneNumberField(verbose_name='Телефон')
+    city = models.CharField(max_length=50, verbose_name='City')
+    street = models.CharField(max_length=100, verbose_name='Street')
+    house = models.CharField(max_length=15, verbose_name='House', blank=True)
+    structure = models.CharField(max_length=15, verbose_name='Structure', blank=True)
+    building = models.CharField(max_length=15, verbose_name='Building', blank=True)
+    apartment = models.CharField(max_length=15, verbose_name='Apartment', blank=True)
+    phone = PhoneNumberField(verbose_name='Phone')
 
     is_deleted = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name = 'Контакты пользователя'
-        verbose_name_plural = 'Список контактов пользователя'
+        verbose_name = 'User Contacts'
+        verbose_name_plural = "User's contact list"
         ordering = ('user',)
 
     def __str__(self):
@@ -297,13 +297,13 @@ class Contact(models.Model):
 
 
 class BuyerOrder(models.Model):
-    user = models.ForeignKey(User, verbose_name='Пользователь',
+    user = models.ForeignKey(User, verbose_name='User',
                              related_name='orders', null=True,
                              on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(null=True)
 
-    state = models.CharField(verbose_name='Статус', choices=BuyerOrderState.choices, max_length=16)
+    state = models.CharField(verbose_name='Status', choices=BuyerOrderState.choices, max_length=16)
 
     @property
     def contact(self):
@@ -315,8 +315,8 @@ class BuyerOrder(models.Model):
                     if seller_order.state != SellerOrderState.canceled])
 
     class Meta:
-        verbose_name = 'Заказ'
-        verbose_name_plural = 'Список заказов покупателя'
+        verbose_name = 'Order'
+        verbose_name_plural = "List of buyer's orders"
         ordering = ('id',)
 
     def __str__(self):
@@ -324,10 +324,10 @@ class BuyerOrder(models.Model):
 
 
 class SellerOrder(models.Model):
-    buyer_order = models.ForeignKey(BuyerOrder, verbose_name='Заказ покупателя',
+    buyer_order = models.ForeignKey(BuyerOrder, verbose_name="Buyer's order",
                                     related_name='seller_orders', null=True,
                                     on_delete=models.CASCADE)
-    shop = models.ForeignKey(Shop, verbose_name='Заказы продавца',
+    shop = models.ForeignKey(Shop, verbose_name="Seller's Orders",
                              related_name='orders', null=True,
                              on_delete=models.CASCADE)
 
@@ -335,9 +335,9 @@ class SellerOrder(models.Model):
 
     created_at = models.DateTimeField(null=True)
 
-    state = models.CharField(verbose_name='Статус', choices=SellerOrderState.choices, max_length=15)
+    state = models.CharField(verbose_name='Status', choices=SellerOrderState.choices, max_length=15)
 
-    contact = models.ForeignKey(Contact, verbose_name='Контакт',
+    contact = models.ForeignKey(Contact, verbose_name='Contact',
                                 related_name='seller_orders',
                                 blank=True, null=True,
                                 on_delete=models.CASCADE)
@@ -351,8 +351,8 @@ class SellerOrder(models.Model):
         return sum_of_products + self.shipping_price
 
     class Meta:
-        verbose_name = 'Заказ'
-        verbose_name_plural = 'Список заказов продавца'
+        verbose_name = 'Order'
+        verbose_name_plural = "List of seller's orders"
         ordering = ('id',)
 
     def __str__(self):
@@ -364,7 +364,8 @@ class SellerOrder(models.Model):
             product_info.quantity += ordered_item.quantity
             product_info.save()
 
-        if buyer_order is None: buyer_order = self.buyer_order
+        if buyer_order is None:
+            buyer_order = self.buyer_order
 
         if buyer_order.state != (partial_state := BuyerOrderState.partial_accepted):
             buyer_order.state = partial_state
@@ -372,22 +373,22 @@ class SellerOrder(models.Model):
 
 
 class SellerOrderItem(models.Model):
-    order = models.ForeignKey(SellerOrder, verbose_name='Заказ', related_name='ordered_items', blank=True, null=True,
+    order = models.ForeignKey(SellerOrder, verbose_name='Order', related_name='ordered_items', blank=True, null=True,
                               on_delete=models.CASCADE)
 
-    product_info = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте', related_name='ordered_items',
+    product_info = models.ForeignKey(ProductInfo, verbose_name='Product Information', related_name='ordered_items',
                                      blank=True,
                                      on_delete=models.CASCADE)
 
-    quantity = models.PositiveIntegerField(verbose_name='Количество')
+    quantity = models.PositiveIntegerField(verbose_name='Quantity')
 
     purchase_price = models.PositiveIntegerField(blank=True, default=None)
 
     purchase_price_rrc = models.PositiveIntegerField(blank=True, default=None)
 
     class Meta:
-        verbose_name = 'Заказанная позиция'
-        verbose_name_plural = 'Список заказанных позиций'
+        verbose_name = 'Ordered item'
+        verbose_name_plural = 'List of ordered items'
         ordering = ('product_info',)
         constraints = [
             models.UniqueConstraint(fields=['order_id', 'product_info'], name='unique_order_item'),

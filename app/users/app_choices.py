@@ -3,24 +3,24 @@ from django.utils.translation import gettext_lazy as _
 
 
 class UserType(models.TextChoices):
-    buyer = 'buyer', _('Покупатель')
-    seller = 'seller', _('Магазин')
+    buyer = 'buyer', _('Buyer')
+    seller = 'seller', _('Seller')
 
 
 class UserConfirmation(models.TextChoices):
-    need_user = 2, _('Требуется подтверждение на статус пользователя')
-    need_admin = 1, _('Требуется подтверждение на статус админа')
-    confirmed = 0, _('Подтверждён')
+    need_user = 2, _("Confirmation of the user's status is required")
+    need_admin = 1, _('Confirmation of the admin status is required')
+    confirmed = 0, _('Confirmed')
 
 
 class SellerOrderState(models.TextChoices):
-    basket = 'basket', _('Статус корзины')
-    new = 'new', _('Новый')
-    confirmed = 'confirmed', _('Подтвержден')
-    assembled = 'assembled', _('Собран')
-    sent = 'sent', _('Отправлен')
-    delivered = 'delivered', _('Доставлен')
-    canceled = 'canceled', _('Отменен')
+    basket = 'basket', _('Basket status')
+    new = 'new', _('New')
+    confirmed = 'confirmed', _('Confirmed')
+    assembled = 'assembled', _('Assembled')
+    sent = 'sent', _('Shipped')
+    delivered = 'delivered', _('Delivered')
+    canceled = 'canceled', _('Canceled')
 
     @classmethod
     def get_cancelable_by_user_states(cls):
@@ -28,11 +28,11 @@ class SellerOrderState(models.TextChoices):
 
 
 class BuyerOrderState(models.TextChoices):
-    basket = 'basket', _('Статус корзины')
-    partial_accepted = 'partial accepted', _('Частично принят')
-    accepted = 'accepted', _('Принят')
+    basket = 'basket', _('Basket status')
+    partial_accepted = 'partial accepted', _('Partially accepted')
+    accepted = 'accepted', _('Accepted')
 
 
 class PartnerState(models.TextChoices):
-    open = 'on', _('Открыт')
-    closed = 'off', _('Закрыт')
+    open = 'open', _('Open')
+    closed = 'closed', _('Closed')
