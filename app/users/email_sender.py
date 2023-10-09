@@ -16,7 +16,7 @@ def send_confirmation_email(*emails, subject: str, message: str):
 #         message,
 #         EMAIL_HOST_USER,
 #         [emails],
-#         fail_silently=False,
+#         fail_silently=False
 #     )
 #
 #     email.send()
