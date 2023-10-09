@@ -27,9 +27,9 @@ services:
   postgresql:
     image: 'postgres:12'
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: 'netology_diplom_db'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgrespwd'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
