@@ -148,20 +148,6 @@ class ProductInfoBaseSerializer(serializers.ModelSerializer):
         model = ProductInfo
 
 
-class ProductInfoSerializer(ProductInfoBaseSerializer):
-    category = BuyerCategorySerializer(read_only=True)
-    shop = ShopSerializer(read_only=True)
-
-    class Meta(ProductInfoBaseSerializer.Meta):
-        fields = ('id', 'category', 'product', 'product_parameters', 'shop', 'quantity', 'price', 'price_rrc',)
-        read_only_fields = ('id',)
-
-
-class ProductInfoForOrderSerializer(ProductInfoSerializer):
-    class Meta(ProductInfoBaseSerializer.Meta):
-        fields = ('id', 'category', 'product', 'product_parameters', 'price', 'price_rrc',)
-
-
 class PartnerCategorySerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=50)
     external_id = serializers.IntegerField(min_value=1)
@@ -181,6 +167,20 @@ class BuyerCategorySerializer(PartnerCategorySerializer):
 
     class Meta(PartnerCategorySerializer.Meta):
         fields = ('id', 'name', )
+
+
+class ProductInfoSerializer(ProductInfoBaseSerializer):
+    category = BuyerCategorySerializer(read_only=True)
+    shop = ShopSerializer(read_only=True)
+
+    class Meta(ProductInfoBaseSerializer.Meta):
+        fields = ('id', 'category', 'product', 'product_parameters', 'shop', 'quantity', 'price', 'price_rrc',)
+        read_only_fields = ('id',)
+
+
+class ProductInfoForOrderSerializer(ProductInfoSerializer):
+    class Meta(ProductInfoBaseSerializer.Meta):
+        fields = ('id', 'category', 'product', 'product_parameters', 'price', 'price_rrc',)
 
 
 class PartnerProductInfoBriefSerializer(ProductInfoBaseSerializer):

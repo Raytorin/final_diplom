@@ -22,7 +22,6 @@ GET {{baseUrl}}/users/
 Content-Type: application/json
 
 {
-    "Authorization": "Token d13d142c-11aa-4ad4-802d-bf530546e6c8",
     "first_name": "Giorno", 
     "last_name": "Giovanna", 
     "username": "Mac", 
