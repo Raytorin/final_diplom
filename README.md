@@ -2,6 +2,12 @@
 
 ### Для запуска docker-compose использовать следующую команду (Beta)
  ```sudo docker-compose up --build -d```
+
+### Запуск без docker
+```python manage.py collectstatic```
+```python manage.py makemigrations```
+```python manage.py migrate```
+```python manage.py runserver```
  
 ### В проекте присутствуют защищенные методы, для доступа к ним необходимо в http-запросе в заголовке указать Authorization со значением Token
 ### Пример token
@@ -202,5 +208,68 @@
     "quantity": 10,
     "price": 78000,
     "price_rrc": 90000
+}
+```
+
+### /partner/products/1/
+### GET - выдвет товар магзина с индентификатором 1
+### PATCH - изменяет товар магазина с индентификатором 1
+### DELETE - удалить товар из наличия
+### Пример
+```
+{
+    "product_parameters": [
+        {
+            "parameter": "efficiency",
+            "value": "low"
+        },
+        {
+            "parameter": "color",
+            "value": "black"
+        },
+        {
+            "parameter": "cyrillic",
+            "value": "yes"
+        }
+    ],
+    "price": 90000,
+    "price_rrc": 98000,
+    "quantity": 3
+}
+```
+
+### /partner/state/
+### GET - получить текущий статус магазиан
+### POST позволяет изменить статус магазина
+### Пример
+```
+{
+    "state": "open"
+}
+```
+
+### /partner/orders/
+### GET - выдает список всех заказов (присутствует филтрация по почте, телефону и дате создания)
+### Пример, выдвет заказы удовлетворяющие дате создания, телефону и почте
+```
+    /partner/orders/?created_at_before=2023-10-10&phone=9990001122&email=example@gmail.com
+```
+
+### /partner/orders/1/
+### GET - выводит заказ магазина с индентификатором 1
+### PATCH - изменяет заказ с индентификатором 1
+### Возможные статусы заказов
+* new
+* confirmed
+* assembled
+* sent
+* delivered
+* canceled
+### Для защиты, статусы canceled и delivered нельзя изменить
+### также нельзя изменить стоимость когда заказ sent, delivered и canceled 
+### Пример
+```
+{
+    "state": "canceled"
 }
 ```
